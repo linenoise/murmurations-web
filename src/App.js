@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import ethereumLogo from './assets/ethereum-logo.svg';
 import './styles/App.css';
+import { ethers } from "ethers";
+import murmurationsAlpha from './utils/MurmurationsAlpha.json';
 
 // Constants
 const MOBIUS_HANDLE = `m0bius.eth`;
 const MOBIUS_ETH = `https://twitter.com/cyclemobius`;
 const LINENOISE_HANDLE = `linenoise.eth`;
 const LINENOISE_ETH = `https://linenoise.io/`
-// const TOTAL_MINT_COUNT = 50;
+const CONTRACT_ADDRESS = "0xC625BcBBB91B6Dd4C080DFEB41D848CB6176E4E6";
+const TOTAL_MINT_COUNT = 7;
 
 const App = () => {
 
@@ -15,16 +18,12 @@ const App = () => {
 
   const checkIfWalletIsConnected = async () => {
     const { ethereum } = window;
-
     if (!ethereum) {
       console.log("No ethereum wallet detected.");
       return;
-    } else {
-      console.log("We have the ethereum DOM object.", ethereum);
     }
 
     const accounts = await ethereum.request({ method: 'eth_accounts' });
-
     if (accounts.length !== 0) {
       const account = accounts[0];
       console.log("Found an authorized ethereum account:", account);
@@ -38,14 +37,38 @@ const App = () => {
     try {
       const { ethereum } = window;
       if (!ethereum) {
-        alert("You will need an Ethereum wallet such as MetaMask to connect and mint NFTs.");
+        alert("No ethereum wallet detected.");
         return;
       }
 
       const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-
       console.log("Connected ", accounts[0]);
       setCurrentAccount(accounts[0]); 
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const askContractToMintNft = async () => {
+    try {
+      const { ethereum } = window;
+  
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const connectedContract = new ethers.Contract(CONTRACT_ADDRESS, murmurationsAlpha.abi, signer);
+  
+        console.log("Opening wallet to pay gas...")
+        let nftTransaction = await connectedContract.mintMurmuration();
+  
+        console.log("Minting...")
+        await nftTransaction.wait();
+        
+        console.log(`Minted, see transaction: https://rinkeby.etherscan.io/tx/${nftTransaction.hash}`);
+  
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
     } catch (error) {
       console.log(error)
     }
@@ -63,8 +86,8 @@ const App = () => {
       <p className="connected-text">
         Connected as {currentAccount}. 
       </p>
-      <button onClick={null} className="cta-button mint-button">
-        Mint NFT
+      <button onClick={askContractToMintNft} className="cta-button mint-button">
+        Mint an NFT
       </button>
     </div>
   );
