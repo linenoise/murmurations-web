@@ -28,6 +28,11 @@
   color: white;
 }
 
+.sub-text-link {
+  font-size: 25px;
+  color: white;
+}
+
 .gradient-text {
   background: -webkit-linear-gradient(left, #01B6C7 30%, #C200CB 60%);
   background-clip: text;
@@ -96,7 +101,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-bottom: 50px;
+  padding-bottom: 32px;
   color: white;
   font-size: 16px;
 }
